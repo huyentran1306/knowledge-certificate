@@ -22,8 +22,7 @@ npm run build      # kiểm tra kiểu + build ra dist/
 ## Deploy (Cloudflare)
 
 - **URL site**: `https://knowledge-certificate.trannth1306.workers.dev`
-- **Deploy từ máy**: `npm run deploy` (lần đầu cần `npx wrangler login`).
-- **Tự deploy**: Push lên `main` kích hoạt GitHub Actions tự build và deploy (yêu cầu cấu hình 2 secrets: `CLOUDFLARE_API_TOKEN` và `CLOUDFLARE_ACCOUNT_ID`).
+- **Deploy**: Chạy lệnh `npm run deploy` (tự động build và deploy thẳng lên Cloudflare Workers; lần đầu cần `npx wrangler login`).
 
 ## Dữ liệu nằm ở đâu
 
