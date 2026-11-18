@@ -4,9 +4,10 @@ import { sql } from './certs/sql';
 import { cloud } from './certs/cloud';
 import { agents } from './certs/agents';
 import { architect } from './certs/architect';
+import { ccaf } from './certs/ccaf';
 
 /** Thêm chứng chỉ mới: tạo file trong ./certs rồi thêm vào mảng này. */
-export const CERTS: Cert[] = [copilot, sql, cloud, agents, architect].sort((a, b) => a.earned.localeCompare(b.earned));
+export const CERTS: Cert[] = [copilot, sql, cloud, agents, architect, ccaf].sort((a, b) => a.earned.localeCompare(b.earned));
 
 export const CERT_BY_ID = Object.fromEntries(CERTS.map((c) => [c.id, c])) as Record<CertId, Cert>;
 
@@ -26,12 +27,12 @@ export const TOPICS: Topic[] = [
   {
     title: 'Prompt engineering',
     desc: 'System message, few-shot, ngữ cảnh rõ ràng — áp dụng từ IDE đến agent.',
-    certs: ['copilot', 'sql', 'cloud', 'agents', 'architect'],
+    certs: ['copilot', 'sql', 'cloud', 'agents', 'architect', 'ccaf'],
   },
   {
     title: 'Agents & tool calling',
     desc: 'Agent tự lập kế hoạch, gọi tool, phối hợp nhiều agent cho tác vụ nhiều bước.',
-    certs: ['copilot', 'agents', 'architect'],
+    certs: ['copilot', 'agents', 'architect', 'ccaf'],
   },
   {
     title: 'Responsible AI',
@@ -46,7 +47,7 @@ export const TOPICS: Topic[] = [
   {
     title: 'Đánh giá & giám sát',
     desc: 'Groundedness, relevance, tracing — đo chất lượng trước và sau khi lên production.',
-    certs: ['cloud', 'agents', 'architect'],
+    certs: ['cloud', 'agents', 'architect', 'ccaf'],
   },
 ];
 
@@ -67,6 +68,10 @@ export const SKILLS: { label: string; cert: CertId }[] = [
   { label: 'Copilot Chat', cert: 'copilot' },
   { label: 'Agent mode', cert: 'copilot' },
   { label: 'Copilot Studio', cert: 'architect' },
+  { label: 'Claude Code', cert: 'ccaf' },
+  { label: 'Subagents', cert: 'ccaf' },
+  { label: 'Hooks', cert: 'ccaf' },
+  { label: 'Structured output', cert: 'ccaf' },
 ];
 
 /** Màu cho 6 nhánh bản đồ tư duy (dùng chung cho mọi chứng chỉ). */

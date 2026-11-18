@@ -1,6 +1,6 @@
 import type { IconName } from '../components/Icon';
 
-export type CertId = 'copilot' | 'sql' | 'cloud' | 'agents' | 'architect';
+export type CertId = 'copilot' | 'sql' | 'cloud' | 'agents' | 'architect' | 'ccaf';
 
 /** Bộ màu riêng của mỗi chứng chỉ. */
 export interface CertTheme {
@@ -75,14 +75,52 @@ export interface Resource {
   url: string;
 }
 
+/** Sơ đồ kiến trúc tổng thể — "1 hình nhớ cả chứng chỉ". Toạ độ tâm khối theo viewBox 1200 × 450 (khối rộng 168, cao 64). */
+export interface BlueprintNode {
+  id: string;
+  label: string;
+  sub?: string;
+  icon: IconName;
+  x: number;
+  y: number;
+  /** main = luồng chính; side = lớp bảo vệ/giám sát (viền nét đứt) */
+  kind?: 'main' | 'side';
+  what: string;
+  tip: string;
+}
+export interface Blueprint {
+  caption: string;
+  nodes: BlueprintNode[];
+  /** [từ, tới, nhãn?, nét đứt?] */
+  edges: [string, string, string?, boolean?][];
+}
+
+/** Cây quyết định "khi nào dùng gì". Nút là câu hỏi (có opts) hoặc đáp án (có answer). */
+export type DecideNode =
+  | { q: string; opts: [string, string][] }
+  | { answer: string; why: string; remember?: string };
+export interface DecisionTree {
+  title: string;
+  start: string;
+  nodes: Record<string, DecideNode>;
+}
+
+/** So sánh 2 khái niệm hay bị đánh tráo trong đề. */
+export interface Comparison {
+  a: string;
+  b: string;
+  rows: [string, string, string][];
+  rule: string;
+}
+
 export interface Cert {
   id: CertId;
   /** Chữ viết tắt in trên huy hiệu. */
   mono: string;
   title: string;
   short: string;
-  issuer: 'Microsoft' | 'GitHub';
-  level: 'Associate' | 'Expert' | 'GitHub';
+  issuer: 'Microsoft' | 'GitHub' | 'Anthropic';
+  level: 'Associate' | 'Expert' | 'GitHub' | 'Foundations';
   /** YYYY-MM-DD */
   earned: string;
   /** YYYY-MM-DD */
@@ -101,6 +139,10 @@ export interface Cert {
   flashcards: Flashcard[];
   quiz: QuizItem[];
   resources: Resource[];
+  /** Phần học trực quan (tuỳ chọn) */
+  blueprint?: Blueprint;
+  decide?: DecisionTree;
+  compare?: Comparison[];
 }
 
 export interface Topic {

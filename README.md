@@ -1,6 +1,6 @@
 # Cert Atlas — sổ tay kiến thức chứng chỉ
 
-Portal cá nhân ghi lại những gì đã học sau mỗi chứng chỉ: tóm tắt, demo tương tác, bản đồ tư duy, khái niệm cốt lõi, code mẫu, bẫy đề thi và chế độ ôn tập.
+Portal cá nhân ghi lại những gì đã học sau mỗi chứng chỉ: tóm tắt, sơ đồ kiến trúc, cây quyết định “khi nào dùng gì”, demo tương tác, bản đồ tư duy, khái niệm cốt lõi, code mẫu, bẫy đề thi và chế độ ôn tập.
 
 | Màn hình | Đường dẫn | Có gì |
 |---|---|---|
@@ -41,6 +41,7 @@ Lưu ý khi viết nội dung:
 - `mindmap` cần đúng **6 nhánh**, mỗi nhánh **3 ý** (3 nhánh đầu nằm bên trái). Ý con nên ≤ 24 ký tự để nằm trên một dòng.
 - `demo.steps` hiển thị đẹp nhất với 4–6 bước.
 - `code.samples[].lang`: `python`, `sql`, `yaml`, `markdown` hoặc `text`.
+- Phần học trực quan (tuỳ chọn, xem mẫu ở `agents.ts`, `ccaf.ts`): `blueprint` (sơ đồ kiến trúc — toạ độ tâm khối trong khung 1200 × 450), `decide` (cây quyết định “khi nào dùng gì”) và `compare` (bảng A vs B). Khi có `compare`, mục “Bẫy đề thi” được thay bằng “Đừng nhầm”; khi có bất kỳ phần nào, cuối trang có thêm “Nhớ trong 5 câu”.
 
 > Nội dung hiện có là bản tóm tắt cá nhân, nên đối chiếu thêm với study guide chính thức trên Microsoft Learn / GitHub.
 

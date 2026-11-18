@@ -9,35 +9,47 @@ import { Ring } from '../components/Ring';
 import { Reveal } from '../components/Reveal';
 import { themeVars } from '../components/CertCard';
 import { CodeTabs, ConceptCards, DemoStepper, Domains, Notes } from '../components/CertSections';
+import { Blueprint, CompareCards, DecisionFlow, RecallStrip } from '../components/LearnVisuals';
+import type { Cert } from '../data/types';
 import { NotFound } from './NotFound';
 
-const TOC = [
-  ['overview', 'Tóm tắt 30 giây'],
-  ['demo', 'Demo tương tác'],
-  ['domains', 'Nhóm kiến thức'],
-  ['concepts', 'Khái niệm cốt lõi'],
-  ['code', 'Code mẫu'],
-  ['traps', 'Bẫy đề thi'],
-  ['takeaways', 'Điều mình rút ra'],
-] as const;
+/** Mục lục: phần trực quan chỉ hiện khi chứng chỉ có dữ liệu tương ứng. */
+const tocFor = (c: Cert | undefined): [string, string][] => {
+  if (!c) return [];
+  const visual = Boolean(c.blueprint || c.decide || c.compare);
+  return [
+    ['overview', 'Tóm tắt 30 giây'],
+    ...(c.blueprint ? [['blueprint', 'Bức tranh lớn'] as [string, string]] : []),
+    ...(c.decide ? [['decide', 'Khi nào dùng gì'] as [string, string]] : []),
+    ...(c.compare ? [['compare', 'Đừng nhầm'] as [string, string]] : []),
+    ['demo', 'Demo tương tác'],
+    ['domains', 'Nhóm kiến thức'],
+    ['concepts', 'Khái niệm cốt lõi'],
+    ['code', 'Code mẫu'],
+    ...(c.compare ? [] : [['traps', 'Bẫy đề thi'] as [string, string]]),
+    ...(visual ? [['recall', 'Nhớ trong 5 câu'] as [string, string]] : []),
+    ['takeaways', 'Điều mình rút ra'],
+  ];
+};
 
 export function CertPage() {
   const { id } = useParams();
   const cert = getCert(id);
   const [active, setActive] = useState<string>('overview');
+  const TOC = tocFor(cert);
 
   // Đánh dấu mục đang đọc trong mục lục: mục cuối cùng có đầu đã cuộn qua mốc 140px.
   useEffect(() => {
     let raf = 0;
     const update = () => {
       raf = 0;
-      let cur: string = TOC[0][0];
+      let cur: string = TOC[0]?.[0] ?? 'overview';
       for (const [key] of TOC) {
         const el = document.getElementById(key);
         if (el && el.getBoundingClientRect().top < 140) cur = key;
       }
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-      setActive(atBottom ? TOC[TOC.length - 1][0] : cur);
+      setActive(atBottom ? TOC[TOC.length - 1]?.[0] ?? cur : cur);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -48,7 +60,7 @@ export function CertPage() {
       window.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(raf);
     };
-  }, [cert?.id]);
+  }, [cert?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!cert) return <NotFound />;
 
@@ -76,7 +88,7 @@ export function CertPage() {
             </nav>
             <div className="tag-row rv">
               <span className="chip-outline theme-ink">{cert.level === 'GitHub' ? 'GITHUB' : cert.level.toUpperCase()}</span>
-              <span className="chip-outline">{cert.issuer === 'Microsoft' ? 'Microsoft Certified' : 'GitHub Certification'}</span>
+              <span className="chip-outline">{{ Microsoft: 'Microsoft Certified', GitHub: 'GitHub Certification', Anthropic: 'Anthropic Certification' }[cert.issuer]}</span>
             </div>
             <h1 className="h cert-title rv d1">{cert.title}</h1>
             <p className="cert-lead rv d2">{cert.tagline}</p>
@@ -133,7 +145,7 @@ export function CertPage() {
           <nav className="toc" aria-label="Mục lục">
             {TOC.map(([key, label], i) => (
               <button key={key} type="button" className={active === key ? 'on' : ''} onClick={() => scrollToId(key)}>
-                <span className="mono">0{i + 1}</span>
+                <span className="mono">{String(i + 1).padStart(2, '0')}</span>
                 {label}
               </button>
             ))}
@@ -165,6 +177,39 @@ export function CertPage() {
             </div>
           </Reveal>
 
+          {cert.blueprint && (
+            <Reveal as="section" id="blueprint" className="stack-20">
+              <div className="section-head tight">
+                <div>
+                  <h2 className="h sec-h">Bức tranh lớn</h2>
+                  <p className="muted small" style={{ marginTop: 8 }}>{cert.blueprint.caption} — nhớ được hình này là nhớ được khung của cả chứng chỉ.</p>
+                </div>
+                <span className="muted-sm">Bấm từng khối</span>
+              </div>
+              <Blueprint cert={cert} />
+            </Reveal>
+          )}
+
+          {cert.decide && (
+            <Reveal as="section" id="decide" className="stack-20">
+              <div>
+                <h2 className="h sec-h">Khi nào dùng gì</h2>
+                <p className="muted small" style={{ marginTop: 8 }}>Đề thi hỏi nhiều nhất kiểu “tình huống này chọn dịch vụ nào”. Đi theo cây để luyện đúng phản xạ đó.</p>
+              </div>
+              <DecisionFlow cert={cert} />
+            </Reveal>
+          )}
+
+          {cert.compare && (
+            <Reveal as="section" id="compare" className="stack-20">
+              <div>
+                <h2 className="h sec-h">Đừng nhầm</h2>
+                <p className="muted small" style={{ marginTop: 8 }}>Những cặp hay bị đánh tráo trong đề — đặt cạnh nhau là thấy khác ngay.</p>
+              </div>
+              <CompareCards cert={cert} />
+            </Reveal>
+          )}
+
           <Reveal as="section" id="demo">
             <DemoStepper cert={cert} />
           </Reveal>
@@ -195,6 +240,7 @@ export function CertPage() {
             <CodeTabs cert={cert} />
           </Reveal>
 
+          {!cert.compare && (
           <Reveal as="section" id="traps" className="stack-20">
             <h2 className="h sec-h">Bẫy đề thi</h2>
             <div className="grid-3">
@@ -211,6 +257,17 @@ export function CertPage() {
               ))}
             </div>
           </Reveal>
+          )}
+
+          {(cert.blueprint || cert.decide || cert.compare) && (
+            <Reveal as="section" id="recall" className="stack-20">
+              <div>
+                <h2 className="h sec-h">Nhớ trong 5 câu</h2>
+                <p className="muted small" style={{ marginTop: 8 }}>Đọc lại 5 câu này trước khi thi, rồi tự kiểm tra ngay bên cạnh.</p>
+              </div>
+              <RecallStrip cert={cert} />
+            </Reveal>
+          )}
 
           <Reveal as="section" id="takeaways" className="stack-20">
             <h2 className="h sec-h">Điều mình rút ra</h2>

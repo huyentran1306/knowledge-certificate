@@ -7,16 +7,16 @@ const W = 1200;
 const H = 660;
 const HX = W / 2;
 const HY = H / 2;
-const ANGLES = [-90, -18, 54, 126, 198];
 const rad = (d: number) => (d * Math.PI) / 180;
 
-/** Bản đồ tổng: bạn ở giữa → 5 chứng chỉ → chủ đề chính của từng chứng chỉ. */
+/** Bản đồ tổng: bạn ở giữa → các chứng chỉ → chủ đề chính của từng chứng chỉ. */
 export function AtlasMap() {
   const [hover, setHover] = useState<CertId | null>(null);
   const nav = useNavigate();
 
   const nodes = CERTS.map((c, i) => {
-    const a = ANGLES[i % ANGLES.length];
+    // Chia đều quanh tâm, bắt đầu từ đỉnh — chạy được với bất kỳ số chứng chỉ nào.
+    const a = -90 + (360 / CERTS.length) * i;
     const x = HX + 330 * Math.cos(rad(a));
     const y = HY + 190 * Math.sin(rad(a));
     const leaves = c.tags.slice(0, 3).map((t, j) => {
@@ -32,7 +32,7 @@ export function AtlasMap() {
 
   return (
     <div className="atlas-scroll">
-      <svg className="atlas" viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Bản đồ tổng 5 chứng chỉ">
+      <svg className="atlas" viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`Bản đồ tổng ${CERTS.length} chứng chỉ`}>
         <circle className="atlas-orbit" cx={HX} cy={HY} r={250} fill="none" stroke="#DCE1EC" strokeDasharray="4 8" />
 
         {nodes.map(({ c, x, y, leaves, delay }) => (
