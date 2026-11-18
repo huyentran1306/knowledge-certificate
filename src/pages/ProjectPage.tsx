@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getCert } from '../data';
 import { getProject } from '../data/projects/mtm';
@@ -10,7 +10,6 @@ import { MatchReplay } from '../components/project/MatchReplay';
 import { DecisionLab, TimeboxCalc } from '../components/project/DecisionLab';
 import { ProjectEmblem } from '../components/project/ProjectEmblem';
 import { AgentNetwork, CountStat, Ticker, useCardFx, useInView, reducedMotion } from '../components/project/fx';
-import { scrollToId } from '../lib/text';
 import { NotFound } from './NotFound';
 
 const NAV: [string, string][] = [
@@ -21,6 +20,68 @@ const NAV: [string, string][] = [
   ['journey', 'Hành trình'],
   ['lessons', 'Bài học'],
 ];
+
+/** Cuộn tới mục, chừa chỗ cho header + thanh mục dính. */
+const goTo = (id: string) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 136, behavior: reducedMotion() ? 'auto' : 'smooth' });
+};
+
+/** Thanh mục: viên “pill” trượt theo mục đang xem, tự cuộn ngang trên điện thoại. */
+function SectionNav({ active, navRef }: { active: string; navRef: React.RefObject<HTMLElement | null> }) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
+  useLayoutEffect(() => {
+    const row = rowRef.current;
+    const place = () => {
+      const btn = row?.querySelector<HTMLButtonElement>(`[data-k="${active}"]`);
+      if (!row || !btn) return;
+      setPill({ x: btn.offsetLeft, w: btn.offsetWidth });
+      if (row.scrollWidth > row.clientWidth) {
+        row.scrollTo({ left: btn.offsetLeft - row.clientWidth / 2 + btn.offsetWidth / 2, behavior: 'smooth' });
+      }
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [active]);
+  return (
+    <nav className="pj-nav" aria-label="Mục của dự án" ref={navRef}>
+      <span className="pj-progress" aria-hidden="true" />
+      <div className="container pj-nav-row" ref={rowRef}>
+        {pill && <span className="pj-nav-pill" aria-hidden="true" style={{ translate: `${pill.x}px 0`, width: pill.w }} />}
+        {NAV.map(([key, label], i) => (
+          <button key={key} type="button" data-k={key} className={active === key ? 'on' : ''} aria-current={active === key ? 'true' : undefined} onClick={() => goTo(key)}>
+            <span className="pj-nav-n mono">{String(i + 1).padStart(2, '0')}</span>
+            {label}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/** Nút lên đầu trang, vòng ngoài là tiến độ cuộn (--sp). */
+function BackToTop({ show }: { show: boolean }) {
+  const R = 22;
+  const C = 2 * Math.PI * R;
+  return (
+    <button
+      type="button"
+      className={`pj-top ${show ? 'show' : ''}`}
+      aria-label="Lên đầu trang"
+      tabIndex={show ? 0 : -1}
+      onClick={() => window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' })}
+    >
+      <svg viewBox="0 0 52 52" aria-hidden="true" className="pj-top-svg">
+        <circle cx="26" cy="26" r={R} className="pj-top-track" />
+        <circle cx="26" cy="26" r={R} className="pj-top-ring" style={{ strokeDasharray: C, strokeDashoffset: `calc(${C} * (1 - var(--sp, 0)))` }} />
+      </svg>
+      <Icon name="chevDown" size={20} stroke={2.4} className="pj-top-ico" />
+    </button>
+  );
+}
 
 const TICKER: [string, string][] = [
   ['wait_for_update', 'đợt đề mới · DISCOVERED ×3'],
@@ -105,6 +166,7 @@ export function ProjectPage() {
   const cert = getCert(id);
   const p = getProject(slug);
   const [active, setActive] = useState('rules');
+  const [pastHero, setPastHero] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   useCardFx(rootRef);
@@ -118,13 +180,17 @@ export function ProjectPage() {
         const el = document.getElementById(key);
         if (el && el.getBoundingClientRect().top < 160) cur = key;
       }
-      setActive(cur);
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      navRef.current?.style.setProperty('--sp', String(max > 0 ? window.scrollY / max : 0));
+      // Mục cuối thường không chạm tới mép trên: cuộn hết trang thì coi như đang ở mục cuối.
+      if (max > 0 && window.scrollY >= max - 8) cur = NAV[NAV.length - 1][0];
+      setActive(cur);
+      setPastHero(window.scrollY > 640);
+      rootRef.current?.style.setProperty('--sp', String(max > 0 ? Math.min(1, window.scrollY / max) : 0));
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
@@ -164,10 +230,10 @@ export function ProjectPage() {
               <Ticker lines={TICKER} />
             </div>
             <div className="row-12 wrap rv d3">
-              <button type="button" className="btn btn-theme" onClick={() => scrollToId('replay')}>
+              <button type="button" className="btn btn-theme" onClick={() => goTo('replay')}>
                 <Icon name="play" size={16} fill /> Xem phát lại trận
               </button>
-              <button type="button" className="btn pj-btn-ghost" onClick={() => scrollToId('detail')}>
+              <button type="button" className="btn pj-btn-ghost" onClick={() => goTo('detail')}>
                 Agent quyết định thế nào <Icon name="arrow" size={16} className="arrow" />
               </button>
             </div>
@@ -194,16 +260,7 @@ export function ProjectPage() {
         </div>
       </section>
 
-      <nav className="pj-nav" aria-label="Mục của dự án" ref={navRef}>
-        <span className="pj-progress" aria-hidden="true" />
-        <div className="container pj-nav-row">
-          {NAV.map(([key, label]) => (
-            <button key={key} type="button" className={active === key ? 'on' : ''} onClick={() => scrollToId(key)}>
-              {label}
-            </button>
-          ))}
-        </div>
-      </nav>
+      <SectionNav active={active} navRef={navRef} />
 
       <div className="container pj-body">
         {/* ── Thể lệ ── */}
@@ -381,15 +438,48 @@ export function ProjectPage() {
               </div>
             ))}
           </div>
-          <Link to={`/cert/${cert.id}`} className="pager-link pj-back">
-            <Icon name="arrowLeft" size={18} />
-            <span>
-              <span className="muted-sm">Quay lại chứng chỉ</span>
-              <b>{cert.short}</b>
-            </span>
-          </Link>
         </Reveal>
       </div>
+
+      {/* ── Kết trang ── */}
+      <section className="pj-finale" aria-labelledby="pj-finale-h">
+        <div className="pj-hero-grid-bg" aria-hidden="true" />
+        <AgentNetwork />
+        <div className="pj-aurora" aria-hidden="true" />
+        <div className="container pj-finale-in">
+          <div className="pj-finale-clock mono" aria-hidden="true">
+            <span className="pj-finale-dot" /> 40:00 · HẾT TRẬN
+          </div>
+          <h2 id="pj-finale-h" className="h pj-finale-h">
+            Helper lo phần cơ học, agent giữ phần <span className="pj-grad">phán đoán</span>.
+          </h2>
+          <p className="pj-finale-p">Mỗi lần mất điểm trong trận tập đều được viết thành một test trước khi sửa. Kit đi từ 1.0 tới v6 qua {p.milestones.length} mốc phiên bản như thế.</p>
+          <div className="pj-finale-chips">
+            {p.stats.map(([n, l]) => (
+              <span key={l}>
+                <b className="mono">{n}</b> {l}
+              </span>
+            ))}
+          </div>
+          <div className="row-12 wrap pj-finale-cta">
+            <button
+              type="button"
+              className="btn btn-theme"
+              onClick={() => {
+                goTo('replay');
+                window.dispatchEvent(new CustomEvent('mtm:replay'));
+              }}
+            >
+              <Icon name="refresh" size={16} /> Phát lại trận từ đầu
+            </button>
+            <Link to={`/cert/${cert.id}`} className="btn pj-btn-ghost">
+              <Icon name="arrowLeft" size={16} /> Về chứng chỉ {cert.short}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <BackToTop show={pastHero} />
     </div>
   );
 }

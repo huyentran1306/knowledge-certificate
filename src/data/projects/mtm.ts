@@ -190,8 +190,8 @@ export const mtm: Project = {
       },
       {
         id: 'log',
-        label: 'progress.ndjson',
-        sub: 'kênh trạng thái',
+        label: 'Progress log',
+        sub: 'ndjson · kênh trạng thái',
         icon: 'doc',
         x: 680,
         y: 70,
@@ -201,7 +201,7 @@ export const mtm: Project = {
       },
       {
         id: 'portal',
-        label: 'Portal · Game API',
+        label: 'Game Portal',
         sub: 'start · submissions',
         icon: 'bolt',
         x: 1010,

@@ -97,6 +97,43 @@ export function MatchReplay({ replay }: { replay: Replay }) {
     }
   }, [inView]); // eslint-disable-line react-hooks/exhaustive-deps
   const events = useMemo(() => buildEvents(replay), [replay]);
+  const near = useInView(rootRef, 0.3, false);
+  const tRef = useRef(t);
+  tRef.current = t;
+
+  // Nút "Phát lại trận từ đầu" ở cuối trang.
+  useEffect(() => {
+    const restart = () => {
+      autoplayed.current = true;
+      setT(0);
+      setPlaying(true);
+    };
+    window.addEventListener("mtm:replay", restart);
+    return () => window.removeEventListener("mtm:replay", restart);
+  }, []);
+
+  // Phím tắt khi khung trận đang trên màn hình: Space phát/dừng, ← → tua 1 phút.
+  useEffect(() => {
+    if (!near) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (el.closest("input, textarea, select, button, a, [contenteditable]")) return;
+      if (e.key === " ") {
+        e.preventDefault();
+        if (tRef.current >= total) {
+          setT(0);
+          setPlaying(true);
+        } else setPlaying((p) => !p);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const d = e.key === "ArrowLeft" ? -1 : 1;
+        setT((cur) => Math.min(total, Math.max(0, cur + d)));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [near, total]);
 
   useEffect(() => {
     if (!playing) return;
@@ -340,6 +377,10 @@ export function MatchReplay({ replay }: { replay: Replay }) {
             <span>
               <i className="lg wave" /> Đợt đề mới
             </span>
+            <span className="rp-keys">
+              <kbd>Space</kbd> phát/dừng <kbd>←</kbd>
+              <kbd>→</kbd> tua 1 phút · bấm dòng log để tua tới đó
+            </span>
           </div>
         </div>
 
@@ -355,14 +396,20 @@ export function MatchReplay({ replay }: { replay: Replay }) {
                 </div>
               )}
               {shown.map((e, i) => (
-                <div
+                <button
+                  type="button"
                   key={i}
                   className={`rp-line ${e.kind} ${t - e.at < 0.8 ? "new" : ""}`}
+                  title={`Tua về ${clock(e.at)}`}
+                  onClick={() => {
+                    setPlaying(false);
+                    setT(e.at + 0.01);
+                  }}
                 >
                   <span className="rp-t mono">{clock(e.at)}</span>
                   <span className="rp-tag mono">{e.tag}</span>
                   <span>{e.text}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
