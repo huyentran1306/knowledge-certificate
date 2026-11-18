@@ -19,7 +19,11 @@ npm run dev        # http://localhost:5173
 npm run build      # kiểm tra kiểu + build ra dist/
 ```
 
-Push lên `main` sẽ tự deploy lên GitHub Pages qua `.github/workflows/deploy.yml`.
+## Deploy (Cloudflare)
+
+- **URL site**: `https://knowledge-certificate.trannth1306.workers.dev`
+- **Deploy từ máy**: `npm run deploy` (lần đầu cần `npx wrangler login`).
+- **Tự deploy**: Push lên `main` kích hoạt GitHub Actions tự build và deploy (yêu cầu cấu hình 2 secrets: `CLOUDFLARE_API_TOKEN` và `CLOUDFLARE_ACCOUNT_ID`).
 
 ## Dữ liệu nằm ở đâu
 
@@ -52,4 +56,4 @@ src/
   styles/app.css   toàn bộ giao diện (light mode, hiệu ứng, responsive)
 ```
 
-Stack: Vite + React + TypeScript + React Router (HashRouter để chạy được trên GitHub Pages). Không dùng thư viện UI — hiệu ứng viết bằng CSS và SVG.
+Stack: Vite + React + TypeScript + React Router (HashRouter, deploy dạng static assets trên Cloudflare Workers). Không dùng thư viện UI — hiệu ứng viết bằng CSS và SVG.
