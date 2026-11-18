@@ -138,7 +138,7 @@ export function CertPage() {
                   <span className="pj-launch-text">
                     <span className="pj-launch-k mono">DỰ ÁN THỰC CHIẾN · CODEX MULTI-AGENT</span>
                     <b className="h">{p.short}</b>
-                    <span>Đội AI agent tự đi thi 40 phút — xem giải pháp, phát lại trận thật và cách agent ra quyết định</span>
+                    <span>Kit Team Orchestrator trên Codex CLI — giải pháp, phát lại trận và cách agent ra quyết định</span>
                   </span>
                   <Icon name="arrow" size={20} stroke={2.4} className="pj-launch-arrow" />
                 </Link>

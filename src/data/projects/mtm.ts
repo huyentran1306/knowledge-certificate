@@ -97,7 +97,7 @@ export const mtm: Project = {
   slug: 'mtm',
   cert: 'agents',
   mono: 'MTM',
-  title: 'Master the Machine — đội AI agent tự đi thi',
+  title: 'Master the Machine',
   short: 'Master the Machine',
   role: 'Đội BAK · thiết kế & vận hành kit Team Orchestrator',
   tagline:

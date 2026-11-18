@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Project, Situation } from '../../data/projects/mtm';
 import { Icon } from '../Icon';
+import { Typewriter } from './fx';
 
 /* ═══════════════ Phòng thử tình huống: kit thấy gì → làm gì → vì sao ═══════════════ */
 export function DecisionLab({ situations }: { situations: Situation[] }) {
@@ -20,7 +21,9 @@ export function DecisionLab({ situations }: { situations: Situation[] }) {
       <div className="dl-panel" key={s.id} role="tabpanel">
         <div className="dl-signal">
           <span className="dl-k mono">KIT THẤY</span>
-          <p>{s.signal}</p>
+          <p>
+            <Typewriter text={s.signal} />
+          </p>
         </div>
         <div className="dl-k mono">KIT LÀM</div>
         <ol className="dl-steps">

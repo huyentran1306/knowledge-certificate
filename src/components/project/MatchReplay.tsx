@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Replay, ReplayItem } from "../../data/projects/mtm";
 import { Icon } from "../Icon";
+import { ConfettiBurst, reducedMotion, useInView } from "./fx";
 
 /** Khoảng integrate → gate → push → nộp ở cuối mỗi item (ước lượng; state của kit 2.9.1 chỉ lưu giờ nộp). */
 const SHIP = 0.4;
@@ -85,6 +86,16 @@ export function MatchReplay({ replay }: { replay: Replay }) {
   const [speed, setSpeed] = useState(1);
   const [sel, setSel] = useState<string | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(rootRef, 0.45);
+  const autoplayed = useRef(false);
+  // Tự phát một lần khi khung trận lọt vào màn hình.
+  useEffect(() => {
+    if (inView && !autoplayed.current && !reducedMotion()) {
+      autoplayed.current = true;
+      if (t === 0) setPlaying(true);
+    }
+  }, [inView]); // eslint-disable-line react-hooks/exhaustive-deps
   const events = useMemo(() => buildEvents(replay), [replay]);
 
   useEffect(() => {
@@ -136,7 +147,7 @@ export function MatchReplay({ replay }: { replay: Replay }) {
   };
 
   return (
-    <div className="rp">
+    <div className={`rp ${playing ? "is-playing" : ""}`} ref={rootRef}>
       <div className="rp-hud">
         <div className="rp-clock">
           <span className={`rp-live ${playing ? "on" : ""}`}>
@@ -153,11 +164,13 @@ export function MatchReplay({ replay }: { replay: Replay }) {
         </div>
         <div className="rp-kpis">
           <div>
-            <b className="mono">{score}</b>
+            <b className="mono rp-bump" key={score}>
+              {score}
+            </b>
             <span>điểm đã chấm{maxSoFar ? ` / ${maxSoFar}` : ""}</span>
           </div>
           <div>
-            <b className="mono">
+            <b className="mono rp-bump" key={done.length}>
               {done.length}/{replay.items.length}
             </b>
             <span>item đã nộp</span>
@@ -273,7 +286,7 @@ export function MatchReplay({ replay }: { replay: Replay }) {
                       />
                       {t > it.disp && (
                         <span
-                          className="rp-seg work"
+                          className={`rp-seg work ${t < it.sub - SHIP ? "live" : ""}`}
                           style={{
                             left: pct(it.disp, total),
                             width: `calc(${pct(Math.min(t, it.sub - SHIP), total)} - ${pct(it.disp, total)})`,
@@ -342,7 +355,10 @@ export function MatchReplay({ replay }: { replay: Replay }) {
                 </div>
               )}
               {shown.map((e, i) => (
-                <div key={i} className={`rp-line ${e.kind}`}>
+                <div
+                  key={i}
+                  className={`rp-line ${e.kind} ${t - e.at < 0.8 ? "new" : ""}`}
+                >
                   <span className="rp-t mono">{clock(e.at)}</span>
                   <span className="rp-tag mono">{e.tag}</span>
                   <span>{e.text}</span>
@@ -416,6 +432,7 @@ export function MatchReplay({ replay }: { replay: Replay }) {
 
       {finished && (
         <div className="rp-summary lv-in">
+          <ConfettiBurst />
           <div>
             <div className="rp-big h">
               {replay.score}
