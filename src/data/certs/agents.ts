@@ -13,6 +13,7 @@ export const agents: Cert = {
   tagline:
     'Xây ứng dụng generative AI và agent trên Azure: từ triển khai model, RAG, tool calling đến đánh giá chất lượng và an toàn nội dung.',
   tags: ['Agent Service', 'Tool calling', 'Evaluation'],
+  projects: ['mtm'],
   overview: {
     proves: 'Bạn đưa được một ứng dụng AI/agent từ prototype lên production trên Azure — đúng, an toàn và đo lường được.',
     tools: 'Microsoft Foundry, Agent Service, Azure OpenAI, Azure AI Search, Content Safety, SDK azure-ai-projects.',

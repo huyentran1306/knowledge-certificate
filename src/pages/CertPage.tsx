@@ -12,6 +12,8 @@ import { CodeTabs, ConceptCards, DemoStepper, Domains, Notes } from '../componen
 import { Blueprint, CompareCards, DecisionFlow, RecallStrip } from '../components/LearnVisuals';
 import type { Cert } from '../data/types';
 import { NotFound } from './NotFound';
+import { getProject } from '../data/projects/mtm';
+import { ProjectEmblem } from '../components/project/ProjectEmblem';
 
 /** Mục lục: phần trực quan chỉ hiện khi chứng chỉ có dữ liệu tương ứng. */
 const tocFor = (c: Cert | undefined): [string, string][] => {
@@ -125,6 +127,23 @@ export function CertPage() {
                 Ôn tập bộ này <Icon name="arrow" size={16} stroke={2.4} className="arrow" />
               </Link>
             </div>
+            {cert.projects?.map((slug) => {
+              const p = getProject(slug);
+              return p ? (
+                <Link key={slug} to={`/cert/${cert.id}/project/${slug}`} className="pj-launch rv d4">
+                  <span className="pj-launch-glow" aria-hidden="true" />
+                  <span className="pj-launch-em">
+                    <ProjectEmblem mono={p.mono} size={64} />
+                  </span>
+                  <span className="pj-launch-text">
+                    <span className="pj-launch-k mono">DỰ ÁN THỰC CHIẾN · CODEX MULTI-AGENT</span>
+                    <b className="h">{p.short}</b>
+                    <span>Đội AI agent tự đi thi 40 phút — xem giải pháp, phát lại trận thật và cách agent ra quyết định</span>
+                  </span>
+                  <Icon name="arrow" size={20} stroke={2.4} className="pj-launch-arrow" />
+                </Link>
+              ) : null;
+            })}
           </div>
           <div className="cert-hero-vis" aria-hidden="true">
             <Ring size={280} stroke={12} value={days / validity(cert.earned, cert.expires)} color={cert.theme.color} track={cert.theme.tint} label={`Còn ${days} ngày`} />

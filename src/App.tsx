@@ -5,6 +5,7 @@ import { CommandPalette } from './components/CommandPalette';
 import { HomePage } from './pages/HomePage';
 import { CertPage } from './pages/CertPage';
 import { MindmapPage } from './pages/MindmapPage';
+import { ProjectPage } from './pages/ProjectPage';
 import { ReviewPage } from './pages/ReviewPage';
 import { NotFound } from './pages/NotFound';
 import { scrollToId } from './lib/text';
@@ -49,6 +50,7 @@ export function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/cert/:id" element={<CertPage />} />
           <Route path="/cert/:id/map" element={<MindmapPage />} />
+          <Route path="/cert/:id/project/:slug" element={<ProjectPage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

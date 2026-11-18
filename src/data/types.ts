@@ -143,6 +143,8 @@ export interface Cert {
   blueprint?: Blueprint;
   decide?: DecisionTree;
   compare?: Comparison[];
+  /** Slug các dự án thực chiến gắn với chứng chỉ (xem data/projects). */
+  projects?: string[];
 }
 
 export interface Topic {
